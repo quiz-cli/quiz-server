@@ -1,25 +1,18 @@
 [project]
 name = "quiz-server"
 version = "0.1.0"
-description = "Quiz server"
+description = "Quiz server providing websocket endpoints for participation and managing the quiz game"
 authors = [
     {name = "Martin Zeleny", email = "martin.zeleny@volny.cz"},
 ]
+readme = "README.md"
+license = {text = "MIT"}
+
+requires-python = ">=3.13"
 dependencies = [
-    "fastapi>=0.104.1",
-    "uvicorn[standard]>=0.27.0.post1",
+    "fastapi[standard]>=0.112.1",
     "aioconsole>=0.6.2",
     "ruamel-yaml>=0.18.5",
     "dataclasses>=0.6",
     "logging>=0.4.9.6",
 ]
-requires-python = ">=3.11"
-readme = "README.md"
-license = {text = "MIT"}
-
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
-
-[tool.pdm.scripts]
-start = "uvicorn quiz_server.__main__:app --log-level warning --reload"

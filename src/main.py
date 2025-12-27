@@ -88,13 +88,15 @@ class Player:
         try:
             await self._websocket.send_json(data)
         except RuntimeError:
-            logging.info(f'Player unreachable, cannot send data: {self.name}')
+            logging.info(f"Player unreachable, cannot send data: {self.name}")
 
     async def close_connection(self, msg: str):
         try:
             await self._websocket.close(reason=msg)
         except RuntimeError:
-            logging.info(f'Player unreachable, cannot close the connection: {self.name}')
+            logging.info(
+                f"Player unreachable, cannot close the connection: {self.name}"
+            )
 
 
 class Players:
@@ -124,19 +126,22 @@ class Players:
 
 
 class Results:
-    _results: dict[tuple[str, int], str] = {}
+    _results: dict[tuple[str, int], dict] = {}
 
     def check_answer(
         self, player: Player, question: Question, question_number: int, answer: str
     ):
-        self._results[(player.name, question_number)] = answer
+        self._results[(player.name, question_number)] = {
+            "answer": answer,
+            "correct": True
+        }
 
     def __str__(self):
         output = "\nResults:\n"
-        output += "Name\tQuestion\tResult\n"
+        output += "Player\tNumber\tAnswer\tCorrect\n"
 
-        for (name, qustion), result in self._results.items():
-            output += f"{name}\t{qustion}\t{result}\n"
+        for (name, number), result in self._results.items():
+            output += f"{name}\t{number}\t{result['answer']}\t{result['correct']}\n"
 
         return output
 
@@ -172,7 +177,7 @@ logging.basicConfig(
     format="%(asctime)s.%(msecs)03d|%(message)s",
     datefmt="%H:%M:%S",
     # filename=f'{datetime.now():quiz-log_%Y-%m-%d_%H:%M:%S.txt}'
-    filename="quiz-log_.txt",
+    # filename="quiz-log_.txt",
 )
 
 
