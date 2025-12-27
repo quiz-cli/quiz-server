@@ -15,4 +15,8 @@ dependencies = [
     "ruamel-yaml>=0.18.5",
     "dataclasses>=0.6",
     "logging>=0.4.9.6",
+    "quiz-common",
 ]
+
+[tool.uv.sources]
+quiz-common = { git = "https://github.com/quiz-cli/quiz-common.git", rev = "main" }
