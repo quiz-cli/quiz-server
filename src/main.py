@@ -48,7 +48,6 @@ async def connect(ws: WebSocket, player_name: str) -> None:
                 player.block_answer()
                 app.state.results.check_answer(
                     player,
-                    app.state.quiz.question,
                     app.state.quiz.current_question,
                     data["answer"],
                 )

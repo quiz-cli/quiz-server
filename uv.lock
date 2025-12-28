@@ -546,7 +546,7 @@ wheels = [
 [[package]]
 name = "quiz-common"
 version = "0.1.0"
-source = { git = "https://github.com/quiz-cli/quiz-common.git?rev=main#c70f44b8e38d7718ef75bc3c3d097002904a35d7" }
+source = { git = "https://github.com/quiz-cli/quiz-common.git?rev=main#a9b09302101b408096454e7985aa870c9919458e" }
 
 [[package]]
 name = "quiz-server"
