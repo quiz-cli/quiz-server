@@ -7,7 +7,7 @@ from quiz_common.models import Question
 class Player:
     _websocket: WebSocket
     name: str
-    accepting_answer: bool = False
+    _allowed_answer: bool = False
 
     async def send(self, data: dict):
         try:
@@ -23,11 +23,19 @@ class Player:
                 f"Player unreachable, cannot close the connection: {self.name}"
             )
 
+    @property
+    def is_allowed_answer(self) -> bool:
+        return self._allowed_answer
+
+    def block_answer(self):
+        self._allowed_answer = False
+
+    def allow_answer(self):
+        self._allowed_answer = True
+
 
 class Players:
     _players: list[Player] = []
-
-    def find(self, player_id: str): ...
 
     def add(self, player: Player):
         self._players.append(player)
@@ -37,14 +45,14 @@ class Players:
 
     def unblock_players(self):
         for player in self._players:
-            player.accepting_answer = True
+            player.allow_answer()
 
     async def send(self, data: dict):
         for player in self._players:
             await player.send(data)
 
     async def close_connection(self, msg: str):
-        """Print results of the quiz and disconnect the clients"""
+        """Disconnect all the players"""
 
         for player in self._players:
             await player.close_connection(msg)
@@ -58,7 +66,7 @@ class Results:
     ):
         self._results[(player.name, question_number)] = {
             "answer": answer,
-            "correct": True
+            "correct": True  # Temporary placeholder
         }
 
     def as_list(self) -> list[dict]:
