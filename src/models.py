@@ -1,75 +1,104 @@
-from dataclasses import dataclass
-from fastapi import WebSocket
+"""Domain models for players connected to the quiz server and their results."""
+
 import logging
-from quiz_common.models import Question
+from dataclasses import dataclass
+from typing import ClassVar
+
+from fastapi import WebSocket
+
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class Player:
+    """A connected quiz participant backed by a WebSocket."""
+
     _websocket: WebSocket
     name: str
     _allowed_answer: bool = False
 
-    async def send(self, data: dict):
+    async def send(self, data: dict) -> None:
+        """Send a JSON-serializable payload to the player."""
         try:
             await self._websocket.send_json(data)
         except RuntimeError:
-            logging.info(f"Player unreachable, cannot send data: {self.name}")
+            logger.info(
+                "Player unreachable, cannot send data: %s",
+                self.name,
+            )
 
-    async def close_connection(self, msg: str):
+    async def close_connection(self, msg: str) -> None:
+        """Close the player's WebSocket connection with a reason."""
         try:
             await self._websocket.close(reason=msg)
         except RuntimeError:
-            logging.info(
-                f"Player unreachable, cannot close the connection: {self.name}"
+            logger.info(
+                "Player unreachable, cannot close the connection: %s",
+                self.name,
             )
 
     @property
     def is_allowed_answer(self) -> bool:
+        """Return whether the player is currently allowed to answer."""
         return self._allowed_answer
 
-    def block_answer(self):
+    def block_answer(self) -> None:
+        """Disallow the player from submitting another answer."""
         self._allowed_answer = False
 
-    def allow_answer(self):
+    def allow_answer(self) -> None:
+        """Allow the player to submit an answer."""
         self._allowed_answer = True
 
 
 class Players:
-    _players: list[Player] = []
+    """A collection of connected players."""
 
-    def add(self, player: Player):
+    _players: ClassVar[list[Player]] = []
+
+    def add(self, player: Player) -> None:
+        """Register a newly connected player."""
         self._players.append(player)
 
-    def remove(self, player: Player):
+    def remove(self, player: Player) -> None:
+        """Unregister a disconnected player."""
         self._players.remove(player)
 
-    def unblock_players(self):
+    def unblock_players(self) -> None:
+        """Allow all players to answer the current question."""
         for player in self._players:
             player.allow_answer()
 
-    async def send(self, data: dict):
+    async def send(self, data: dict) -> None:
+        """Broadcast a message to all connected players."""
         for player in self._players:
             await player.send(data)
 
-    async def close_connection(self, msg: str):
-        """Disconnect all the players"""
-
+    async def close_connection(self, msg: str) -> None:
+        """Disconnect all players with the given reason."""
         for player in self._players:
             await player.close_connection(msg)
 
 
 class Results:
-    _results: dict[tuple[str, int], dict] = {}
+    """Store and expose answers submitted by players."""
+
+    _results: ClassVar[dict[tuple[str, int], dict]] = {}
 
     def check_answer(
-        self, player: Player, question: Question, question_number: int, answer: str
-    ):
+        self,
+        player: Player,
+        question_number: int,
+        answer: str,
+    ) -> None:
+        """Record a player's answer for a question."""
         self._results[(player.name, question_number)] = {
             "answer": answer,
-            "correct": True  # Temporary placeholder
+            "correct": True,  # Temporary placeholder
         }
 
     def as_list(self) -> list[dict]:
+        """Return all recorded results as a list of flat dictionaries."""
         return [
             {
                 "player": player,

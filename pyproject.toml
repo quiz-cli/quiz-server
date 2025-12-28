@@ -20,3 +20,16 @@ dependencies = [
 
 [tool.uv.sources]
 quiz-common = { git = "https://github.com/quiz-cli/quiz-common.git", rev = "main" }
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.10",
+]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D203",
+    "D212",
+    "COM812",
+]

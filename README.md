@@ -1,17 +1,45 @@
 # quiz-server
 
-This is the server side of the client-server quiz application. It tries to
-provide the quiz game experience similar to **Kahoot** but in much lighter and
-open manner as a CLI program.
+This is the server side of a client–server quiz application. It aims to provide
+a quiz experience similar to **Kahoot**, but in a much lighter and more open
+form, suitable for terminal/CLI-based clients.
 
-The server is operated by a lecturer and it is a **FastAPI** application
-providing the endpoint for the clients to establish the connection through the
-**WebSockets**.
+The server is a **FastAPI** application exposing WebSocket endpoints:
 
-The **Asyncio** us used to control the server. It provides asynchronous network
-communication with clients in JSON (sending questions, receiving answers),
-showing the information and proceeding with the quiz questions.
+- an admin endpoint to start and control a quiz,
+- a player endpoint where clients register and submit their answers.
 
-Most of the program entities are implemented as **Data Classes** (`Players`,
-`Player`, `Quiz`, `Questions`, `Question`, `Option`). It loads the quiz
-questions from a **YAML** file.
+Most of the server-side entities are implemented as **data classes**
+(`Player`, `Players`, `Results`). Shared quiz structures such as `Quiz` and
+`Question` come from the companion [`quiz-common`](https://github.com/quiz-cli/quiz-common) package.
+
+## Features
+
+- WebSocket-based real-time quiz flow
+- Multiple players connected simultaneously
+- Admin-driven progression through questions
+- Collection of player answers and simple result aggregation
+
+## Running the server
+
+Get the `uv` tool.
+
+```bash
+$ uv tool install . --editable
+```
+
+```bash
+$ uv run fastapi dev src/main.py
+```
+
+## Contribution
+
+The code needs to comply with:
+
+```bash
+$ uv run ruff format
+```
+
+```bash
+$ uv run ruff check
+```

@@ -1,8 +1,13 @@
+"""FastAPI application exposing WebSocket endpoints for the quiz game."""
+
 import logging
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from quiz_common.models import Quiz
+
 from models import Player, Players, Results
 
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 app.state.players = Players()
@@ -17,6 +22,7 @@ logging.basicConfig(
 
 @app.websocket("/connect/{player_name}")
 async def connect(ws: WebSocket, player_name: str) -> None:
+    """Handle a player's WebSocket connection for participating in the quiz."""
     await ws.accept()
 
     quiz = getattr(app.state, "quiz", None)
@@ -30,13 +36,12 @@ async def connect(ws: WebSocket, player_name: str) -> None:
     player = Player(ws, player_name)
     app.state.players.add(player)
 
-    msg = f"Player connects: {player_name}"
-    logging.info(msg)
+    logger.info("Player connects: %s", player_name)
 
     try:
         while True:
             data = await ws.receive_json()
-            logging.info(f"Client {player_name} sent: {data}")
+            logger.info("Client %s sent: %s", player_name, data)
 
             if player.is_allowed_answer:
                 await player.send({"type": "repeat", "text": data["answer"]})
@@ -49,26 +54,27 @@ async def connect(ws: WebSocket, player_name: str) -> None:
                 )
 
     except WebSocketDisconnect:
-        logging.info(f"Player disconnects: {player_name}")
+        logger.info("Player disconnects: %s", player_name)
         app.state.players.remove(player)
 
 
 @app.websocket("/admin")
 async def admin(ws: WebSocket) -> None:
-    """
-    Admin interface to control the quiz flow and proceeding through questions
-    """
+    """Admin interface to control the quiz flow and proceeding through questions."""
     await ws.accept()
     quiz_data = await ws.receive_json()
     app.state.quiz = Quiz(**quiz_data)
 
-    logging.info(f"Quiz server started running quiz: {app.state.quiz.name}")
+    logger.info(
+        "Quiz server started running quiz: %s",
+        app.state.quiz.name,
+    )
     await ws.send_text(f'Admin for the quiz "{app.state.quiz.name}"')
 
     try:
         while True:
             proceed_char = await ws.receive_text()
-            logging.info(f"Admin sent: {proceed_char}")
+            logger.info("Admin sent: %s", proceed_char)
             if proceed_char.lower() != "y":
                 continue
 
@@ -82,8 +88,8 @@ async def admin(ws: WebSocket) -> None:
                 await ws.close(reason=msg)
                 return
 
-            logging.info("Next question")
+            logger.info("Next question")
             app.state.players.unblock_players()
             await app.state.players.send(question.ask())
     except WebSocketDisconnect:
-        logging.info("Admin disconnected")
+        logger.info("Admin disconnected")
