@@ -16,6 +16,7 @@ dependencies = [
     "dataclasses>=0.6",
     "logging>=0.4.9.6",
     "quiz-common",
+    "pydantic>=2.12.5",
 ]
 
 [tool.uv.sources]
@@ -24,6 +25,7 @@ quiz-common = { git = "https://github.com/quiz-cli/quiz-common.git", rev = "main
 [dependency-groups]
 dev = [
     "ruff>=0.14.10",
+    "ty>=0.0.9",
 ]
 
 [tool.ruff.lint]

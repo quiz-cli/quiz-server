@@ -1,26 +1,27 @@
 """Domain models for players connected to the quiz server and their results."""
 
 import logging
-from dataclasses import dataclass
 from typing import ClassVar
 
 from fastapi import WebSocket
+from pydantic import BaseModel, ConfigDict
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class Player:
+class Player(BaseModel):
     """A connected quiz participant backed by a WebSocket."""
 
-    _websocket: WebSocket
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    websocket: WebSocket
     name: str
-    _allowed_answer: bool = False
+    allowed_answer: bool = False
 
     async def send(self, data: dict) -> None:
         """Send a JSON-serializable payload to the player."""
         try:
-            await self._websocket.send_json(data)
+            await self.websocket.send_json(data)
         except RuntimeError:
             logger.info(
                 "Player unreachable, cannot send data: %s",
@@ -30,7 +31,7 @@ class Player:
     async def close_connection(self, msg: str) -> None:
         """Close the player's WebSocket connection with a reason."""
         try:
-            await self._websocket.close(reason=msg)
+            await self.websocket.close(reason=msg)
         except RuntimeError:
             logger.info(
                 "Player unreachable, cannot close the connection: %s",
@@ -40,15 +41,15 @@ class Player:
     @property
     def is_allowed_answer(self) -> bool:
         """Return whether the player is currently allowed to answer."""
-        return self._allowed_answer
+        return self.allowed_answer
 
     def block_answer(self) -> None:
         """Disallow the player from submitting another answer."""
-        self._allowed_answer = False
+        self.allowed_answer = False
 
     def allow_answer(self) -> None:
         """Allow the player to submit an answer."""
-        self._allowed_answer = True
+        self.allowed_answer = True
 
 
 class Players:

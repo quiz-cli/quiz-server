@@ -33,7 +33,7 @@ async def connect(ws: WebSocket, player_name: str) -> None:
     await ws.send_json({"text": quiz.name})
     await ws.send_json({"text": "Check your name on the screen!"})
 
-    player = Player(ws, player_name)
+    player = Player(websocket=ws, name=player_name)
     app.state.players.add(player)
 
     logger.info("Player connects: %s", player_name)

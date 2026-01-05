@@ -9,9 +9,9 @@ The server is a **FastAPI** application exposing WebSocket endpoints:
 - an admin endpoint to start and control a quiz,
 - a player endpoint where clients register and submit their answers.
 
-Most of the server-side entities are implemented as **data classes**
-(`Player`, `Players`, `Results`). Shared quiz structures such as `Quiz` and
-`Question` come from the companion [`quiz-common`](https://github.com/quiz-cli/quiz-common) package.
+The server-side entity `Player` is implemented as **Pydantic model**.
+Shared quiz structure `Quiz` comes from the companion
+[`quiz-common`](https://github.com/quiz-cli/quiz-common) package.
 
 ## Features
 
