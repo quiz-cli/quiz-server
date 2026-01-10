@@ -13,8 +13,6 @@ dependencies = [
     "fastapi[standard]>=0.112.1",
     "aioconsole>=0.6.2",
     "ruamel-yaml>=0.18.5",
-    "dataclasses>=0.6",
-    "logging>=0.4.9.6",
     "quiz-common",
     "pydantic>=2.12.5",
 ]
