@@ -37,7 +37,9 @@ async def connect(ws: WebSocket, player_name: str) -> None:
     app.state.players.add(player)
 
     logger.info("Player connects: %s", player_name)
-    await app.state.admin.send_text(f"{len(app.state.players)}. player {player_name} connected")
+    await app.state.admin.send_text(
+        f"{len(app.state.players)}. player {player_name} connected"
+    )
 
     try:
         while True:
