@@ -90,5 +90,6 @@ async def admin(ws: WebSocket) -> None:
             logger.info("Next question")
             app.state.players.unblock_players()
             await app.state.players.send(question.ask())
+            await ws.send_json(question.ask())
     except WebSocketDisconnect:
         logger.info("Admin disconnected")
