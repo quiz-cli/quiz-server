@@ -37,6 +37,7 @@ async def connect(ws: WebSocket, player_name: str) -> None:
     app.state.players.add(player)
 
     logger.info("Player connects: %s", player_name)
+    await app.state.admin.send_text(f"{len(app.state.players)}. player {player_name} connected")
 
     try:
         while True:
@@ -55,6 +56,7 @@ async def connect(ws: WebSocket, player_name: str) -> None:
     except WebSocketDisconnect:
         logger.info("Player disconnects: %s", player_name)
         app.state.players.remove(player)
+        await app.state.admin.send_text(f"Player {player_name} disconnected")
 
 
 @app.websocket("/admin")
@@ -63,6 +65,8 @@ async def admin(ws: WebSocket) -> None:
     await ws.accept()
     quiz_data = await ws.receive_json()
     app.state.quiz = Quiz(**quiz_data)
+
+    app.state.admin = ws
 
     logger.info(
         "Quiz server started running quiz: %s",
