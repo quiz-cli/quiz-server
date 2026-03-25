@@ -56,17 +56,14 @@ class Players:
     """A collection of connected players."""
 
     _players: ClassVar[list[Player]] = []
-    _num_players: ClassVar[int] = 0
 
     def add(self, player: Player) -> None:
         """Register a newly connected player."""
         self._players.append(player)
-        self._num_players += 1
 
     def remove(self, player: Player) -> None:
         """Unregister a disconnected player."""
         self._players.remove(player)
-        self._num_players -= 1
 
     def unblock_players(self) -> None:
         """Allow all players to answer the current question."""
@@ -75,7 +72,7 @@ class Players:
 
     def __len__(self) -> int:
         """Return the number of currently connected players."""
-        return self._num_players
+        return len(self._players)
 
     async def send(self, data: dict) -> None:
         """Broadcast a message to all connected players."""
