@@ -75,7 +75,7 @@ class Players:
 
     def __len__(self) -> int:
         """Return the number of currently connected players."""
-        return self._num_players
+        return len(self._players)
 
     async def send(self, data: dict) -> None:
         """Broadcast a message to all connected players."""
