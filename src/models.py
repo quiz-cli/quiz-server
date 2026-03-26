@@ -70,6 +70,10 @@ class Players:
         for player in self._players:
             player.allow_answer()
 
+    def __len__(self) -> int:
+        """Return the number of currently connected players."""
+        return len(self._players)
+
     async def send(self, data: dict) -> None:
         """Broadcast a message to all connected players."""
         for player in self._players:
