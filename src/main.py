@@ -1,6 +1,7 @@
 """FastAPI application exposing WebSocket endpoints for the quiz game."""
 
 import logging
+import string
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from quiz_common.models import Quiz
@@ -19,6 +20,14 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 
+
+def correct_answer(question: dict) -> str:
+    """Extract the correct answer from a question dictionary."""
+    correct_answer_string = ""
+    for letter, opt in zip(string.ascii_letters, question.options, strict=False):
+        if opt.correct:
+            correct_answer_string += letter
+    return correct_answer_string
 
 @app.websocket("/connect/{player_name}")
 async def connect(ws: WebSocket, player_name: str) -> None:
@@ -51,8 +60,9 @@ async def connect(ws: WebSocket, player_name: str) -> None:
                 player.block_answer()
                 app.state.results.check_answer(
                     player,
-                    app.state.quiz.current_question,
                     data["answer"],
+                    app.state.quiz.current_question,
+                    app.state.correct_answer,
                 )
 
     except WebSocketDisconnect:
@@ -85,6 +95,7 @@ async def admin(ws: WebSocket) -> None:
 
             try:
                 question = next(app.state.quiz)
+                app.state.correct_answer = correct_answer(question)
             except StopIteration:
                 await ws.send_json(app.state.results.as_list())
 

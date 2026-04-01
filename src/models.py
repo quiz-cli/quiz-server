@@ -93,13 +93,15 @@ class Results:
     def check_answer(
         self,
         player: Player,
-        question_number: int,
         answer: str,
+        question_number: int,
+        correct_answer: str,
     ) -> None:
         """Record a player's answer for a question."""
+        correct = (set(answer.lower().strip()) == set(correct_answer))
         self._results[(player.name, question_number)] = {
             "answer": answer,
-            "correct": True,  # Temporary placeholder
+            "correct": correct,
         }
 
     def as_list(self) -> list[dict]:
