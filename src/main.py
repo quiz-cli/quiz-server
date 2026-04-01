@@ -4,7 +4,7 @@ import logging
 import string
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from quiz_common.models import Quiz, Question
+from quiz_common.models import Question, Quiz
 
 from models import Player, Players, Results
 
