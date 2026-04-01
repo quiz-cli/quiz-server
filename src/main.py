@@ -4,7 +4,7 @@ import logging
 import string
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from quiz_common.models import Quiz
+from quiz_common.models import Quiz, Question
 
 from models import Player, Players, Results
 
@@ -21,13 +21,14 @@ logging.basicConfig(
 )
 
 
-def correct_answer(question: dict) -> str:
+def correct_answer(question: Question) -> str:
     """Extract the correct answer from a question dictionary."""
     correct_answer_string = ""
     for letter, opt in zip(string.ascii_letters, question.options, strict=False):
         if opt.correct:
             correct_answer_string += letter
     return correct_answer_string
+
 
 @app.websocket("/connect/{player_name}")
 async def connect(ws: WebSocket, player_name: str) -> None:
