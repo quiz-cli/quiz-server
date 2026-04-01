@@ -98,7 +98,7 @@ class Results:
         correct_answer: str,
     ) -> None:
         """Record a player's answer for a question."""
-        correct = (set(answer.lower().strip()) == set(correct_answer))
+        correct = set(answer.lower().strip()) == set(correct_answer)
         self._results[(player.name, question_number)] = {
             "answer": answer,
             "correct": correct,
