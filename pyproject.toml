@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-quiz-common = { git = "https://github.com/quiz-cli/quiz-common.git", rev = "main" }
+quiz-common = { git = "https://github.com/quiz-cli/quiz-common.git" }
 
 [dependency-groups]
 dev = [
