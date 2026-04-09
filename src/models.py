@@ -112,3 +112,7 @@ class Results:
             }
             for (player, number), result in self._results.items()
         ]
+
+    def remove_results(self) -> None:
+        """Reset the results to an empty dictionary."""
+        self._results.clear()

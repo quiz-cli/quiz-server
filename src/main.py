@@ -87,6 +87,7 @@ async def admin(ws: WebSocket) -> None:
                 question = next(app.state.quiz)
             except StopIteration:
                 await ws.send_json(app.state.results.as_list())
+                app.state.results.remove_results()
 
                 msg = "Quiz ended"
                 await app.state.players.close_connection(msg)
