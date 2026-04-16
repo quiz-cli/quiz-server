@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 app.state.players = Players()
 app.state.results = Results()
+app.state.in_progress = False
 
 logging.basicConfig(
     level=logging.INFO,
@@ -58,7 +59,8 @@ async def connect(ws: WebSocket, player_name: str) -> None:
     except WebSocketDisconnect:
         logger.info("Player disconnects: %s", player_name)
         app.state.players.remove(player)
-        await app.state.admin.send_text(f"Player {player_name} disconnected")
+        if app.state.in_progress:
+            await app.state.admin.send_text(f"Player {player_name} disconnected")
 
 
 @app.websocket("/admin")
@@ -67,6 +69,7 @@ async def admin(ws: WebSocket) -> None:
     await ws.accept()
     quiz_data = await ws.receive_json()
     app.state.quiz = Quiz(**quiz_data)
+    app.state.in_progress = True
 
     app.state.admin = ws
 
@@ -89,6 +92,7 @@ async def admin(ws: WebSocket) -> None:
                 await ws.send_json(app.state.results.as_list())
 
                 msg = "Quiz ended"
+                app.state.in_progress = False
                 await app.state.players.close_connection(msg)
                 await ws.close(reason=msg)
                 return
