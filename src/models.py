@@ -115,6 +115,17 @@ class Results:
             for (player, number), result in self._results.items()
         ]
 
+    def for_player(self, player_name: str) -> list[dict]:
+        """Return all recorded results for a specific player."""
+        return [
+            {
+                "question_number": number,
+                **result,
+            }
+            for (player, number), result in self._results.items()
+            if player == player_name
+        ]
+
     def remove_results(self) -> None:
         """Reset the results to an empty dictionary."""
         self._results.clear()
