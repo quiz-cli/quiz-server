@@ -79,6 +79,15 @@ class Players:
         for player in self._players:
             await player.send(data)
 
+    async def send_final_results(self, results: "Results") -> None:
+        """Send each connected player their personal final quiz results."""
+        for player in self._players:
+            await player.send(
+                {
+                    "results": results.for_player(player.name),
+                }
+            )
+
     async def close_connection(self, msg: str) -> None:
         """Disconnect all players with the given reason."""
         for player in self._players:
