@@ -84,6 +84,7 @@ class Players:
         for player in self._players:
             await player.send(
                 {
+                    "type": "final_results",
                     "results": results.for_player(player.name),
                 }
             )
