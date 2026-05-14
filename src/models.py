@@ -79,6 +79,16 @@ class Players:
         for player in self._players:
             await player.send(data)
 
+    async def send_final_results(self, results: "Results") -> None:
+        """Send each connected player their personal final quiz results."""
+        for player in self._players:
+            await player.send(
+                {
+                    "type": "final_results",
+                    "results": results.for_player(player.name),
+                }
+            )
+
     async def close_connection(self, msg: str) -> None:
         """Disconnect all players with the given reason."""
         for player in self._players:
@@ -113,6 +123,17 @@ class Results:
                 **result,
             }
             for (player, number), result in self._results.items()
+        ]
+
+    def for_player(self, player_name: str) -> list[dict]:
+        """Return all recorded results for a specific player."""
+        return [
+            {
+                "question_number": number,
+                **result,
+            }
+            for (player, number), result in self._results.items()
+            if player == player_name
         ]
 
     def remove_results(self) -> None:
