@@ -522,9 +522,19 @@ wheels = [
 [[package]]
 name = "quiz-common"
 version = "0.1.0"
-source = { git = "https://github.com/quiz-cli/quiz-common.git#33f3838d2a7c41b0f40741b6d6e2ecb96071e807" }
+source = { directory = "../quiz-common" }
 dependencies = [
     { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pydantic", specifier = ">=2.12.5" }]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=8.0.0" },
+    { name = "ruff", specifier = ">=0.14.10" },
+    { name = "ty", specifier = ">=0.0.9" },
 ]
 
 [[package]]
@@ -548,7 +558,7 @@ dev = [
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.112.1" },
     { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "quiz-common", git = "https://github.com/quiz-cli/quiz-common.git" },
+    { name = "quiz-common", directory = "../quiz-common" },
     { name = "ruamel-yaml", specifier = ">=0.18.5" },
 ]
 
