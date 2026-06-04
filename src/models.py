@@ -73,7 +73,7 @@ class Players:
     def __len__(self) -> int:
         """Return the number of currently connected players."""
         return len(self._players)
-    
+
     def names(self) -> list[str]:
         """Return the names of all currently connected players."""
         return [player.name for player in self._players]
@@ -140,7 +140,7 @@ class Results:
             for (player, number), result in self._results.items()
             if player == player_name
         ]
-    
+
     def correct_count_for_player(self, player_name: str) -> int:
         """Return the number of correct answers submitted by a player."""
         return sum(
@@ -148,7 +148,7 @@ class Results:
             for (player, _), result in self._results.items()
             if player == player_name
         )
-    
+
     def leaderboard(self, player_names: list[str]) -> list[dict]:
         """Return player scores ordered from highest to lowest."""
         scores = [
