@@ -101,7 +101,14 @@ async def admin(ws: WebSocket) -> None:
                 question = next(app.state.quiz)
                 app.state.correct_answer = correct_answer(question)
             except StopIteration:
-                await ws.send_json(app.state.results.as_list())
+                await ws.send_json(
+                    {
+                        "type": "final_scores",
+                        "scores": app.state.results.leaderboard(
+                            app.state.players.names(),
+                        ),
+                    }
+                )
                 await app.state.players.send_final_results(app.state.results)
                 app.state.results.remove_results()
 

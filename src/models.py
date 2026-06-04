@@ -73,6 +73,10 @@ class Players:
     def __len__(self) -> int:
         """Return the number of currently connected players."""
         return len(self._players)
+    
+    def names(self) -> list[str]:
+        """Return the names of all currently connected players."""
+        return [player.name for player in self._players]
 
     async def send(self, data: dict) -> None:
         """Broadcast a message to all connected players."""
@@ -85,6 +89,7 @@ class Players:
             await player.send(
                 {
                     "type": "final_results",
+                    "correct_count": results.correct_count_for_player(player.name),
                     "results": results.for_player(player.name),
                 }
             )
@@ -135,6 +140,29 @@ class Results:
             for (player, number), result in self._results.items()
             if player == player_name
         ]
+    
+    def correct_count_for_player(self, player_name: str) -> int:
+        """Return the number of correct answers submitted by a player."""
+        return sum(
+            result["correct"]
+            for (player, _), result in self._results.items()
+            if player == player_name
+        )
+    
+    def leaderboard(self, player_names: list[str]) -> list[dict]:
+        """Return player scores ordered from highest to lowest."""
+        scores = [
+            {
+                "player": player_name,
+                "correct_count": self.correct_count_for_player(player_name),
+            }
+            for player_name in player_names
+        ]
+
+        return sorted(
+            scores,
+            key=lambda score: (-score["correct_count"], score["player"]),
+        )
 
     def remove_results(self) -> None:
         """Reset the results to an empty dictionary."""
