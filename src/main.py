@@ -41,37 +41,41 @@ async def connect(ws: WebSocket, player_name: str) -> None:
         await ws.close(reason="Quiz not started yet")
         return
 
-    await ws.send_json({"text": quiz.name})
-    await ws.send_json({"text": "Check your name on the screen!"})
+    if app.state.players.check_duplicate_names(player_name):
+        await ws.send_json({"text": "This nick already exists. Please connect again and choose another one."})
+        await ws.close(reason="Connection closed - incorrect name")
+    else:
+        player = Player(websocket=ws, name=player_name)    
+        app.state.players.add(player)
 
-    player = Player(websocket=ws, name=player_name)
-    app.state.players.add(player)
+        await ws.send_json({"text": quiz.name})
+        await ws.send_json({"text": "Check your name on the screen!"})
 
-    logger.info("Player connects: %s", player_name)
-    await app.state.admin.send_text(
-        f"{len(app.state.players)}. player {player_name} connected"
-    )
+        logger.info("Player connects: %s", player_name)
+        await app.state.admin.send_text(
+            f"{len(app.state.players)}. player {player_name} connected"
+        )
 
-    try:
-        while True:
-            data = await ws.receive_json()
-            logger.info("Client %s sent: %s", player_name, data)
+        try:
+            while True:
+                data = await ws.receive_json()
+                logger.info("Client %s sent: %s", player_name, data)
 
-            if player.is_allowed_answer:
-                await player.send({"type": "repeat", "text": data["answer"]})
-                player.block_answer()
-                app.state.results.check_answer(
-                    player,
-                    data["answer"],
-                    app.state.quiz.current_question,
-                    app.state.correct_answer,
-                )
+                if player.is_allowed_answer:
+                    await player.send({"type": "repeat", "text": data["answer"]})
+                    player.block_answer()
+                    app.state.results.check_answer(
+                        player,
+                        data["answer"],
+                        app.state.quiz.current_question,
+                        app.state.correct_answer,
+                    )
 
-    except WebSocketDisconnect:
-        logger.info("Player disconnects: %s", player_name)
-        app.state.players.remove(player)
-        if app.state.in_progress:
-            await app.state.admin.send_text(f"Player {player_name} disconnected")
+        except WebSocketDisconnect:
+            logger.info("Player disconnects: %s", player_name)
+            app.state.players.remove(player)
+            if app.state.in_progress:
+                await app.state.admin.send_text(f"Player {player_name} disconnected")
 
 
 @app.websocket("/admin")
@@ -102,7 +106,6 @@ async def admin(ws: WebSocket) -> None:
                 app.state.correct_answer = correct_answer(question)
             except StopIteration:
                 await ws.send_json(app.state.results.as_list())
-                await app.state.players.send_final_results(app.state.results)
                 app.state.results.remove_results()
 
                 msg = "Quiz ended"
