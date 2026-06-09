@@ -73,15 +73,10 @@ class Players:
     def __len__(self) -> int:
         """Return the number of currently connected players."""
         return len(self._players)
-    
-    def check_duplicate_names(self, name) -> bool:
-        """Check the players name for duplicity"""
-        for player in self._players:
-            if player.name == name:
-                return True
-            else:
-                return False
 
+    def check_duplicate_names(self, name: str) -> bool:
+        """Check the players name for duplicity."""
+        return any(player.name == name for player in self._players)
 
     async def send(self, data: dict) -> None:
         """Broadcast a message to all connected players."""

@@ -42,10 +42,12 @@ async def connect(ws: WebSocket, player_name: str) -> None:
         return
 
     if app.state.players.check_duplicate_names(player_name):
-        await ws.send_json({"text": "This nick already exists. Please connect again and choose another one."})
+        await ws.send_json(
+            {"text": "This nick already exists. Connect again and choose new one."}
+        )
         await ws.close(reason="Connection closed - incorrect name")
     else:
-        player = Player(websocket=ws, name=player_name)    
+        player = Player(websocket=ws, name=player_name)
         app.state.players.add(player)
 
         await ws.send_json({"text": quiz.name})
