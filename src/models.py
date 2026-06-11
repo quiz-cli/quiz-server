@@ -6,7 +6,6 @@ from typing import ClassVar
 from fastapi import WebSocket
 from pydantic import BaseModel, ConfigDict
 
-
 logger = logging.getLogger(__name__)
 
 
