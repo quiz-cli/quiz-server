@@ -74,9 +74,9 @@ class Players:
         """Return the number of currently connected players."""
         return len(self._players)
 
-    def check_duplicate_names(self, name: str) -> bool:
-        """Check the players name for duplicity."""
-        return any(player.name == name for player in self._players)
+    def names(self) -> list[str]:
+        """Return names of players."""
+        return [player.name for player in self._players]
 
     async def send(self, data: dict) -> None:
         """Broadcast a message to all connected players."""
