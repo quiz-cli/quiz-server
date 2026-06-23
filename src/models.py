@@ -74,6 +74,10 @@ class Players:
         """Return the number of currently connected players."""
         return len(self._players)
 
+    def names(self) -> list[str]:
+        """Return names of players."""
+        return [player.name for player in self._players]
+
     async def send(self, data: dict) -> None:
         """Broadcast a message to all connected players."""
         for player in self._players:
@@ -91,7 +95,8 @@ class Players:
 
     async def close_connection(self, msg: str) -> None:
         """Disconnect all players with the given reason."""
-        for player in self._players.copy():
+        for player in self._players:
+            logger.info(self.names())
             await player.close_connection(msg)
 
 
