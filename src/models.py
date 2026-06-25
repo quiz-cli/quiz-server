@@ -91,7 +91,7 @@ class Players:
 
     async def close_connection(self, msg: str) -> None:
         """Disconnect all players with the given reason."""
-        for player in self._players:
+        for player in self._players.copy():
             await player.close_connection(msg)
 
 
