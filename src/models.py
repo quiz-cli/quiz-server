@@ -109,18 +109,18 @@ class Results:
     ) -> None:
         """Record a player's answer for a question."""
         correct = set(answer.lower().strip()) == set(correct_answer)
-        self._results.append({
-            "player": player.name,
-            "question_number": question_number,
-            "answer": answer,
-            "correct": correct,
-        })
+        self._results.append(
+            {
+                "player": player.name,
+                "question_number": question_number,
+                "answer": answer,
+                "correct": correct,
+            }
+        )
 
-    
-    def as_list(self):
+    def as_list(self) -> list[dict]:
         """Return the JSON-serializable representation."""
         return self._results
-
 
     def for_player(self, player_name: str) -> list[dict]:
         """Return all recorded results for a specific player."""
@@ -133,7 +133,6 @@ class Results:
             for result in self._results
             if result["player"] == player_name
         ]
-
 
     def remove_results(self) -> None:
         """Reset the results to an empty dictionary."""
