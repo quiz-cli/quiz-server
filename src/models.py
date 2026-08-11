@@ -98,7 +98,7 @@ class Players:
 class Results:
     """Store and expose answers submitted by players."""
 
-    _results: ClassVar[dict[tuple[str, int], dict]] = {}
+    _results: ClassVar[list[dict]] = []
 
     def check_answer(
         self,
@@ -109,33 +109,34 @@ class Results:
     ) -> None:
         """Record a player's answer for a question."""
         correct = set(answer.lower().strip()) == set(correct_answer)
-        self._results[(player.name, question_number)] = {
+        self._results.append({
+            "player": player.name,
+            "question_number": question_number,
             "answer": answer,
             "correct": correct,
-        }
+        })
 
-    def as_list(self) -> list[dict]:
-        """Return all recorded results as a list of flat dictionaries."""
-        return [
-            {
-                "player": player,
-                "question_number": number,
-                **result,
-            }
-            for (player, number), result in self._results.items()
-        ]
+    
+    def as_list(self):
+        """Return the JSON-serializable representation."""
+        return self._results
+
 
     def for_player(self, player_name: str) -> list[dict]:
         """Return all recorded results for a specific player."""
         return [
             {
-                "question_number": number,
-                **result,
+                "question_number": result["question_number"],
+                "answer": result["answer"],
+                "correct": result["correct"],
             }
-            for (player, number), result in self._results.items()
-            if player == player_name
+            for result in self._results
+            if result["player"] == player_name
         ]
+
 
     def remove_results(self) -> None:
         """Reset the results to an empty dictionary."""
         self._results.clear()
+
+    
