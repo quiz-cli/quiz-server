@@ -138,5 +138,3 @@ class Results:
     def remove_results(self) -> None:
         """Reset the results to an empty dictionary."""
         self._results.clear()
-
-    
