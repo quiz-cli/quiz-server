@@ -4,7 +4,8 @@ import logging
 import string
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from quiz_common.models import Question, Quiz
+from pydantic import TypeAdapter
+from quiz_common.models import Question, QuestionMessage, Quiz, Message, TextMessage, AnswerMessage
 
 from models import Player, Players, Results
 
@@ -40,9 +41,8 @@ async def connect(ws: WebSocket, player_name: str) -> None:
     if quiz is None:
         await ws.close(reason="Quiz not started yet")
         return
-
-    await ws.send_json({"text": quiz.name})
-    await ws.send_json({"text": "Check your name on the screen!"})
+    await ws.send_json(TextMessage(text=quiz.name).model_dump())
+    await ws.send_json(TextMessage(text="{user_name}, check your name on the screen!", params={"user_name": player_name}).model_dump())
 
     player = Player(websocket=ws, name=player_name)
     app.state.players.add(player)
@@ -54,15 +54,18 @@ async def connect(ws: WebSocket, player_name: str) -> None:
 
     try:
         while True:
-            data = await ws.receive_json()
-            logger.info("Client %s sent: %s", player_name, data)
+            response = await ws.receive_json()
+            data = TypeAdapter(Message).validate_python(response)
+            logger.info("Client %s sent: %s", player_name, data.answer)
 
             if player.is_allowed_answer:
-                await player.send({"type": "repeat", "text": data["answer"]})
+                message = TextMessage(text="{user_name}, check your answer: {answer}", 
+                                      params={"user_name": data.client_id, "answer": data.answer})
+                await player.send(message.model_dump())
                 player.block_answer()
                 app.state.results.check_answer(
                     player,
-                    data["answer"],
+                    data.answer,
                     app.state.quiz.current_question,
                     app.state.correct_answer,
                 )
@@ -112,8 +115,9 @@ async def admin(ws: WebSocket) -> None:
                 return
 
             logger.info("Next question")
+            question_message = QuestionMessage(question=question)
             app.state.players.unblock_players()
-            await app.state.players.send(question.ask())
+            await app.state.players.send(question_message.model_dump())
             await ws.send_json(question.ask())
     except WebSocketDisconnect:
         logger.info("Admin disconnected")
