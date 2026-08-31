@@ -41,11 +41,18 @@ async def connect(ws: WebSocket, player_name: str) -> None:
         await ws.close(reason="Quiz not started yet")
         return
 
-    await ws.send_json({"text": quiz.name})
-    await ws.send_json({"text": "Check your name on the screen!"})
+    if player_name in app.state.players.names():
+        await ws.send_json(
+            {"text": "This nick already exists. Connect again and choose new one."}
+        )
+        await ws.close(reason="Connection closed - incorrect name")
+        return
 
     player = Player(websocket=ws, name=player_name)
     app.state.players.add(player)
+
+    await ws.send_json({"text": quiz.name})
+    await ws.send_json({"text": "Check your name on the screen!"})
 
     logger.info("Player connects: %s", player_name)
     await app.state.admin.send_text(
