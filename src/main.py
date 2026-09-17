@@ -1,18 +1,16 @@
 """FastAPI application exposing WebSocket endpoints for the quiz game."""
 
 import logging
-import string
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from quiz_common.models import Question, Quiz
+from quiz_common.models import Quiz
 
-from models import Player, Players, Results
+from models import Player, Players
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
 app.state.players = Players()
-app.state.results = Results()
 app.state.in_progress = False
 
 logging.basicConfig(
@@ -20,16 +18,6 @@ logging.basicConfig(
     format="%(asctime)s.%(msecs)03d|%(message)s",
     datefmt="%H:%M:%S",
 )
-
-
-def correct_answer(question: Question) -> str:
-    """Extract the correct answer from a question dictionary."""
-    correct_answer_string = ""
-    for letter, opt in zip(string.ascii_letters, question.options, strict=False):
-        if opt.correct:
-            correct_answer_string += letter
-    return correct_answer_string
-
 
 @app.websocket("/connect/{player_name}")
 async def connect(ws: WebSocket, player_name: str) -> None:
@@ -60,11 +48,13 @@ async def connect(ws: WebSocket, player_name: str) -> None:
             if player.is_allowed_answer:
                 await player.send({"type": "repeat", "text": data["answer"]})
                 player.block_answer()
-                app.state.results.check_answer(
-                    player,
-                    data["answer"],
-                    app.state.quiz.current_question,
-                    app.state.correct_answer,
+                await app.state.admin.send_json(
+                    {
+                        "type": "answer",
+                        "player": player.name,
+                        "question_number": app.state.quiz.current_question,
+                        "answer": data["answer"],
+                    }
                 )
 
     except WebSocketDisconnect:
@@ -99,18 +89,16 @@ async def admin(ws: WebSocket) -> None:
 
             try:
                 question = next(app.state.quiz)
-                app.state.correct_answer = correct_answer(question)
             except StopIteration:
                 await ws.send_json(
                     {
-                        "type": "final_scores",
-                        "scores": app.state.results.leaderboard(
-                            app.state.players.names(),
-                        ),
+                        "type": "quiz_finished",
+                        "players": app.state.players.names(),
                     }
                 )
-                await app.state.players.send_final_results(app.state.results)
-                app.state.results.remove_results()
+                final_results = await ws.receive_json()
+                if final_results.get("type") == "final_results":
+                    await app.state.players.send_final_results(final_results)
 
                 msg = "Quiz ended"
                 app.state.in_progress = False

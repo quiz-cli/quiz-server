@@ -1,4 +1,4 @@
-"""Domain models for players connected to the quiz server and their results."""
+"""Domain models for players connected to the quiz server."""
 
 import logging
 from typing import ClassVar
@@ -83,14 +83,19 @@ class Players:
         for player in self._players:
             await player.send(data)
 
-    async def send_final_results(self, results: "Results") -> None:
+    async def send_final_results(self, final_results: dict) -> None:
         """Send each connected player their personal final quiz results."""
+        scores = {
+            score["player"]: score["correct_count"]
+            for score in final_results.get("scores", [])
+        }
+        results = final_results.get("results", {})
         for player in self._players:
             await player.send(
                 {
                     "type": "final_results",
-                    "correct_count": results.correct_count_for_player(player.name),
-                    "results": results.for_player(player.name),
+                    "correct_count": scores.get(player.name, 0),
+                    "results": results.get(player.name, []),
                 }
             )
 
@@ -99,71 +104,3 @@ class Players:
         for player in self._players:
             await player.close_connection(msg)
 
-
-class Results:
-    """Store and expose answers submitted by players."""
-
-    _results: ClassVar[dict[tuple[str, int], dict]] = {}
-
-    def check_answer(
-        self,
-        player: Player,
-        answer: str,
-        question_number: int,
-        correct_answer: str,
-    ) -> None:
-        """Record a player's answer for a question."""
-        correct = set(answer.lower().strip()) == set(correct_answer)
-        self._results[(player.name, question_number)] = {
-            "answer": answer,
-            "correct": correct,
-        }
-
-    def as_list(self) -> list[dict]:
-        """Return all recorded results as a list of flat dictionaries."""
-        return [
-            {
-                "player": player,
-                "question_number": number,
-                **result,
-            }
-            for (player, number), result in self._results.items()
-        ]
-
-    def for_player(self, player_name: str) -> list[dict]:
-        """Return all recorded results for a specific player."""
-        return [
-            {
-                "question_number": number,
-                **result,
-            }
-            for (player, number), result in self._results.items()
-            if player == player_name
-        ]
-
-    def correct_count_for_player(self, player_name: str) -> int:
-        """Return the number of correct answers submitted by a player."""
-        return sum(
-            result["correct"]
-            for (player, _), result in self._results.items()
-            if player == player_name
-        )
-
-    def leaderboard(self, player_names: list[str]) -> list[dict]:
-        """Return player scores ordered from highest to lowest."""
-        scores = [
-            {
-                "player": player_name,
-                "correct_count": self.correct_count_for_player(player_name),
-            }
-            for player_name in player_names
-        ]
-
-        return sorted(
-            scores,
-            key=lambda score: (-score["correct_count"], score["player"]),
-        )
-
-    def remove_results(self) -> None:
-        """Reset the results to an empty dictionary."""
-        self._results.clear()
