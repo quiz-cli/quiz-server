@@ -14,6 +14,7 @@ app = FastAPI()
 app.state.players = Players()
 app.state.results = Results()
 app.state.in_progress = False
+app.state.question_in_progress = False
 
 logging.basicConfig(
     level=logging.INFO,
@@ -104,6 +105,22 @@ async def admin(ws: WebSocket) -> None:
             if proceed_char.lower() != "y":
                 continue
 
+            if app.state.question_in_progress:
+                app.state.players.block_players()
+                await ws.send_json(
+                    {
+                        "type": "question_result",
+                        "correct_answer": app.state.correct_answer,
+                    }
+                )
+                await app.state.players.send_question_results(
+                    app.state.results,
+                    app.state.quiz.current_question,
+                    app.state.correct_answer,
+                )
+                app.state.question_in_progress = False
+                continue
+
             try:
                 question = next(app.state.quiz)
                 app.state.correct_answer = correct_answer(question)
@@ -119,6 +136,7 @@ async def admin(ws: WebSocket) -> None:
                 return
 
             logger.info("Next question")
+            app.state.question_in_progress = True
             app.state.players.unblock_players()
             await app.state.players.send(question.ask())
             await ws.send_json(question.ask())
