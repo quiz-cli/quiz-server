@@ -70,6 +70,11 @@ class Players:
         for player in self._players:
             player.allow_answer()
 
+    def block_players(self) -> None:
+        """Disallow all players from answering the current question."""
+        for player in self._players:
+            player.block_answer()
+
     def __len__(self) -> int:
         """Return the number of currently connected players."""
         return len(self._players)
@@ -86,6 +91,25 @@ class Players:
                 {
                     "type": "final_results",
                     "results": results.for_player(player.name),
+                }
+            )
+
+    async def send_question_results(
+        self,
+        results: "Results",
+        question_number: int,
+        correct_answer: str,
+    ) -> None:
+        """Send each player their result for one completed question."""
+        for player in self._players:
+            await player.send(
+                {
+                    "type": "question_result",
+                    "correct_answer": correct_answer,
+                    "correct": results.for_player_question(
+                        player.name,
+                        question_number,
+                    ),
                 }
             )
 
@@ -133,6 +157,20 @@ class Results:
             for result in self._results
             if result["player"] == player_name
         ]
+
+    def for_player_question(
+        self,
+        player_name: str,
+        question_number: int,
+    ) -> bool | None:
+        """Return a player's correctness for one question or None without an answer."""
+        for result in self._results:
+            if (
+                result["player"] == player_name
+                and result["question_number"] == question_number
+            ):
+                return result["correct"]
+        return None
 
     def remove_results(self) -> None:
         """Reset the results to an empty dictionary."""
