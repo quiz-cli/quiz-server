@@ -1,0 +1,13 @@
+name: Reusable code quality checks
+
+on:
+   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+jobs:
+    quality:
+        uses: quiz-cli/.github/.github/workflows/reusable-code-quality.yml@main
