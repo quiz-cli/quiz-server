@@ -136,7 +136,7 @@ class Results:
         correct_answer: str,
     ) -> None:
         """Record a player's answer for a question."""
-        correct = set(answer.lower().strip()) == set(correct_answer)
+        correct = answer == correct_answer
         self._results.append(
             {
                 "player": player.name,
