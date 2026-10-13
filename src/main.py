@@ -40,7 +40,7 @@ def correct_answer_letter(question: Question) -> str:
 def answer_in_letters(answer: list[bool]) -> str:
     """Transfrom answer from list of bools into letter of alphabet."""
     answer_in_letters = ""
-    for i, pos in zip(answer, range(len(answer)), strict = False):
+    for i, pos in zip(answer, range(len(answer)), strict=False):
         if i:
             answer_in_letters += chr(pos + 97)
     return answer_in_letters
