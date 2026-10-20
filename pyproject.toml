@@ -30,13 +30,7 @@ dev = [
 pythonpath = ["src"]
 
 [tool.ruff.lint]
-select = ["ALL"]
-ignore = [
-    "D203",
-    "D212",
-    "COM812",
-    "CPY001",
-]
+extend = "../.github/ruff.toml"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
