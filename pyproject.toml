@@ -29,7 +29,7 @@ dev = [
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 
-[tool.ruff.lint]
+[tool.ruff]
 extend = "../.github/ruff.toml"
 
 [tool.ruff.lint.per-file-ignores]
