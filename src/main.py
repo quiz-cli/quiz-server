@@ -23,13 +23,27 @@ logging.basicConfig(
 )
 
 
-def correct_answer(question: Question) -> str:
+def correct_answer(question: Question) -> list[bool]:
+    """Extract the correct answer from a question dictionary."""
+    return [opt.correct for opt in question.options]
+
+
+def correct_answer_letter(question: Question) -> str:
     """Extract the correct answer from a question dictionary."""
     correct_answer_string = ""
     for letter, opt in zip(string.ascii_letters, question.options, strict=False):
         if opt.correct:
             correct_answer_string += letter
     return correct_answer_string
+
+
+def answer_in_letters(answer: list[bool]) -> str:
+    """Transfrom answer from list of bools into letter of alphabet."""
+    answer_in_letters = ""
+    for i, pos in zip(answer, range(len(answer)), strict=False):
+        if i:
+            answer_in_letters += chr(pos + 97)
+    return answer_in_letters
 
 
 @app.websocket("/connect/{player_name}")
@@ -66,7 +80,9 @@ async def connect(ws: WebSocket, player_name: str) -> None:
             logger.info("Client %s sent: %s", player_name, data)
 
             if player.is_allowed_answer:
-                await player.send({"type": "repeat", "text": data["answer"]})
+                await player.send(
+                    {"type": "repeat", "text": answer_in_letters(data["answer"])}
+                )
                 player.block_answer()
                 app.state.results.check_answer(
                     player,
@@ -110,13 +126,13 @@ async def admin(ws: WebSocket) -> None:
                 await ws.send_json(
                     {
                         "type": "question_result",
-                        "correct_answer": app.state.correct_answer,
+                        "correct_answer": app.state.correct_answer_letter,
                     }
                 )
                 await app.state.players.send_question_results(
                     app.state.results,
                     app.state.quiz.current_question,
-                    app.state.correct_answer,
+                    app.state.correct_answer_letter,
                 )
                 app.state.question_in_progress = False
                 continue
@@ -124,6 +140,7 @@ async def admin(ws: WebSocket) -> None:
             try:
                 question = next(app.state.quiz)
                 app.state.correct_answer = correct_answer(question)
+                app.state.correct_answer_letter = correct_answer_letter(question)
             except StopIteration:
                 await ws.send_json(app.state.results.as_list())
                 await app.state.players.send_final_results(app.state.results)
