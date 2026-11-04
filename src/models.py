@@ -94,6 +94,7 @@ class Players:
             await player.send(
                 {
                     "type": "final_results",
+                    "correct_count": results.correct_count_for_player(player.name),
                     "results": results.for_player(player.name),
                 }
             )
@@ -175,6 +176,24 @@ class Results:
             ):
                 return result["correct"]
         return None
+
+    def correct_count_for_player(self, player_name: str) -> int:
+        """Return the number of correct answers submitted by a player."""
+        return sum(
+            result["correct"]
+            for result in self._results
+            if result["player"] == player_name
+        )
+
+    def final_scores(self, player_names: list[str]) -> list[dict]:
+        """Return player scores ordered from highest to lowest."""
+        return [
+            {
+                "player": player_name,
+                "correct_count": self.correct_count_for_player(player_name),
+            }
+            for player_name in player_names
+        ]
 
     def remove_results(self) -> None:
         """Reset the results to an empty dictionary."""
