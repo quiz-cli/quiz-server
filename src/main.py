@@ -100,9 +100,9 @@ async def admin(ws: WebSocket) -> None:
 
     try:
         while True:
-            proceed_char = await ws.receive_text()
-            logger.info("Admin sent: %s", proceed_char)
-            if proceed_char.lower() != "y":
+            message = await ws.receive_json()
+            logger.info("Admin sent: %s", message)
+            if message.get("type") != "next_step":
                 continue
 
             if app.state.question_in_progress:
