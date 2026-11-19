@@ -170,20 +170,13 @@ class Results:
     ) -> bool | None:
         """Return a player's correctness for one question or None without an answer."""
         for result in self._results:
-            if (
-                result["player"] == player_name
-                and result["question_number"] == question_number
-            ):
+            if result["player"] == player_name and result["question_number"] == question_number:
                 return result["correct"]
         return None
 
     def correct_count_for_player(self, player_name: str) -> int:
         """Return the number of correct answers submitted by a player."""
-        return sum(
-            result["correct"]
-            for result in self._results
-            if result["player"] == player_name
-        )
+        return sum(result["correct"] for result in self._results if result["player"] == player_name)
 
     def final_scores(self, player_names: list[str]) -> list[dict]:
         """Return player scores ordered from highest to lowest."""

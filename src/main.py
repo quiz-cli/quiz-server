@@ -43,9 +43,7 @@ async def connect(ws: WebSocket, player_name: str) -> None:
         return
 
     if player_name in app.state.players.names():
-        await ws.send_json(
-            {"text": "This nick already exists. Connect again and choose new one."}
-        )
+        await ws.send_json({"text": "This nick already exists. Connect again and choose new one."})
         await ws.close(reason="Connection closed - incorrect name")
         return
 
@@ -56,9 +54,7 @@ async def connect(ws: WebSocket, player_name: str) -> None:
     await ws.send_json({"text": "Check your name on the screen!"})
 
     logger.info("Player connects: %s", player_name)
-    await app.state.admin.send_text(
-        f"{len(app.state.players)}. player {player_name} connected"
-    )
+    await app.state.admin.send_text(f"{len(app.state.players)}. player {player_name} connected")
 
     try:
         while True:
@@ -100,9 +96,9 @@ async def admin(ws: WebSocket) -> None:
 
     try:
         while True:
-            proceed_char = await ws.receive_text()
-            logger.info("Admin sent: %s", proceed_char)
-            if proceed_char.lower() != "y":
+            message = await ws.receive_json()
+            logger.info("Admin sent: %s", message)
+            if message.get("type") != "next_step":
                 continue
 
             if app.state.question_in_progress:
