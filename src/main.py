@@ -54,7 +54,9 @@ async def connect(ws: WebSocket, player_name: str) -> None:
     await ws.send_json({"text": "Check your name on the screen!"})
 
     logger.info("Player connects: %s", player_name)
-    await app.state.admin.send_text(f"{len(app.state.players)}. player {player_name} connected")
+    await app.state.admin.send_json(
+        {"text": f"{len(app.state.players)}. player {player_name} connected"}
+    )
 
     try:
         while True:
@@ -75,7 +77,7 @@ async def connect(ws: WebSocket, player_name: str) -> None:
         logger.info("Player disconnects: %s", player_name)
         app.state.players.remove(player)
         if app.state.in_progress:
-            await app.state.admin.send_text(f"Player {player_name} disconnected")
+            await app.state.admin.send_json({"text": f"Player {player_name} disconnected"})
 
 
 @app.websocket("/admin")
@@ -92,7 +94,7 @@ async def admin(ws: WebSocket) -> None:
         "Quiz server started running quiz: %s",
         app.state.quiz.name,
     )
-    await ws.send_text(f'Admin for the quiz "{app.state.quiz.name}"')
+    await ws.send_json({"text": f'Admin for the quiz "{app.state.quiz.name}"'})
 
     try:
         while True:
